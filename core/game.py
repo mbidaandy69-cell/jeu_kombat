@@ -1,6 +1,7 @@
 import pygame
 from settings import *
 from entities.fighter import Fighter
+from entities.pv_bar import PVBar
 
 class Game:
     def __init__(self):
@@ -9,20 +10,36 @@ class Game:
         pygame.display.set_caption(TITRE_FENETRE)
         self.clock = pygame.time.Clock()
         self.running = True
-        self.player1= Fighter(200, 350, 50, 100, (0, 120, 255))
-        self.player2= Fighter(720, 350, 50, 100, (220, 40, 40))
+        self.police = pygame.font.Font(None, 90)  # Default font and size for displaying text
+        self.nouvelle_partie()
 
     def gerer_evenements(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-    
+            elif event.type== pygame.KEYDOWN and event.key== pygame.K_RETURN and self.vainqueur:
+                self.nouvelle_partie()
+
     def draw(self):
         self.screen.fill(COULEUR_FOND)
         self.player1.draw(self.screen)
         self.player2.draw(self.screen)
+        self.screen.blit(self.player1_pv_bar.image, (10, 10))
+        self.screen.blit(self.player2_pv_bar.image, (LARGEUR_FENETRE - self.player2_pv_bar.width - 10, 10))
+        if self.vainqueur:
+            texte_vainqueur = self.police.render(f"{self.vainqueur} a gagné!", True, (255, 255, 255))
+            texte_rect = texte_vainqueur.get_rect(center=(LARGEUR_FENETRE // 2, HAUTEUR_FENETRE // 2))
+            self.screen.blit(texte_vainqueur, texte_rect)
         pygame.display.flip()
     
+    def nouvelle_partie(self):
+        self.player1= Fighter(200, 350, 50, 100, (0, 120, 255))
+        self.player2= Fighter(720, 350, 50, 100, (220, 40, 40))
+        self.player1_pv_bar = PVBar(self.player1.health, self.player1.max_health, 400, 25)
+        self.player2_pv_bar = PVBar(self.player2.health, self.player2.max_health, 400, 25)  
+        self.vainqueur = None  # Initialize the winner attribute
+        
+        
     def run(self):
         while self.running:
             self.gerer_evenements()
@@ -33,6 +50,8 @@ class Game:
         pygame.quit()
         
     def mettre_à_jour(self):
+        if self.vainqueur:
+            return  # Stop updating if there's a winner
         touches= pygame.key.get_pressed()
         self.player1.deplacer(pygame.K_q, pygame.K_d, touches)
         self.player2.deplacer(pygame.K_LEFT, pygame.K_RIGHT, touches)
@@ -46,7 +65,13 @@ class Game:
         self.player2.attaquer(pygame.K_v, touches)
         self.player1.toucher(self.player2)
         self.player2.toucher(self.player1)
-        print(self.player1.health, self.player2.health)
         self.player1.mettre_a_jour_attaque()
         self.player2.mettre_a_jour_attaque()
+        self.player1_pv_bar.set_pv(self.player1.health)
+        self.player2_pv_bar.set_pv(self.player2.health)   
+        if self.player1.health <= 0:
+            self.vainqueur = "Joueur 2"
+        elif self.player2.health <= 0:
+            self.vainqueur = "Joueur 1"
+        
         

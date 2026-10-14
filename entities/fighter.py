@@ -12,6 +12,9 @@ class Fighter:
         self.regarde_droite= True
         self.attaque_time= 0
         self.a_touche= False
+        self.max_health = 100  # Assuming max health is 100
+        self.vainqueur = None  # Initialize the winner attribute
+        self.police = pygame.font.Font(None, 90)  # Default font and size for displaying text
 
     def move(self, dx=0, dy=0):
         self.rect.x += dx * self.speed
