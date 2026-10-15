@@ -11,13 +11,19 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         self.police = pygame.font.Font(None, 90)  # Default font and size for displaying text
+        self.score1= 0
+        self.score2= 0
+        self.petite_police = pygame.font.Font(None, 50)  # Smaller font for displaying scores
         self.nouvelle_partie()
 
     def gerer_evenements(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            elif event.type== pygame.KEYDOWN and event.key== pygame.K_RETURN and self.vainqueur:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN and self.vainqueur:
+                if self.score1== MANCHES_VICTOIRE or self.score2== MANCHES_VICTOIRE:
+                    self.score1= 0
+                    self.score2= 0
                 self.nouvelle_partie()
 
     def draw(self):
@@ -27,9 +33,16 @@ class Game:
         self.screen.blit(self.player1_pv_bar.image, (10, 10))
         self.screen.blit(self.player2_pv_bar.image, (LARGEUR_FENETRE - self.player2_pv_bar.width - 10, 10))
         if self.vainqueur:
-            texte_vainqueur = self.police.render(f"{self.vainqueur} a gagné!", True, (255, 255, 255))
+            if self.score1== MANCHES_VICTOIRE or self.score2== MANCHES_VICTOIRE:
+                message= f"{self.vainqueur} gagne le match "
+            else:
+                message= f"{self.vainqueur} gagne la manche "   
+            texte_vainqueur = self.police.render(message, True, (255, 255, 255))
+            
             texte_rect = texte_vainqueur.get_rect(center=(LARGEUR_FENETRE // 2, HAUTEUR_FENETRE // 2))
             self.screen.blit(texte_vainqueur, texte_rect)
+        score= self.petite_police.render(f"{self.score1}-{self.score2}", True, (255, 255, 255) )
+        self.screen.blit(score, score.get_rect(center= (LARGEUR_FENETRE // 2, 25)))
         pygame.display.flip()
     
     def nouvelle_partie(self):
@@ -71,7 +84,8 @@ class Game:
         self.player2_pv_bar.set_pv(self.player2.health)   
         if self.player1.health <= 0:
             self.vainqueur = "Joueur 2"
+            self.score2 += 1
         elif self.player2.health <= 0:
             self.vainqueur = "Joueur 1"
-        
+            self.score1 += 1
         
