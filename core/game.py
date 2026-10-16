@@ -92,6 +92,8 @@ class Game:
         self.player2.toucher(self.player1)
         self.player1.mettre_a_jour_attaque()
         self.player2.mettre_a_jour_attaque()
+        self.player1.animer()
+        self.player2.animer()
         self.player1_pv_bar.set_pv(self.player1.health)
         self.player2_pv_bar.set_pv(self.player2.health)   
         if self.player1.health <= 0:

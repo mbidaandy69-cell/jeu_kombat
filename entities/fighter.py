@@ -15,17 +15,22 @@ class Fighter:
         self.attaque_time= 0
         self.a_touche= False
         self.max_health = 100  # Assuming max health is 100
-        self.vainqueur = None  # Initialize the winner attribute
-        self.police = pygame.font.Font(None, 90)  # Default font and size for displaying text
         dossier= os.path.join(os.path.dirname(__file__), "..", "assets", "images", "samurai")
-        self.images= decoupe_bande(os.path.join(dossier, "idle1.png"), 10, (240, 240))
+        self.images_repos= decoupe_bande(os.path.join(dossier, "idle1.png"), 10, (240, 240))
+        self.index_image= 0
+        self.compteur_anim= 0
+        self.images_course= decoupe_bande(os.path.join(dossier, "run1.png"), 16, (240, 240))
+        self.image_attaque= decoupe_bande(os.path.join(dossier, "attaque1.png"), 7, (240, 240))
+        self.animation= {"repos": self.images_repos, "course": self.images_course, "attaque": self.image_attaque}
+        self.etat_anim= "repos"
+        self.en_mouvement= False
 
     def move(self, dx=0, dy=0):
         self.rect.x += dx * self.speed
         self.rect.y += dy * self.speed
 
     def draw(self, surface):
-        image= self.images[0]  # For now, just use the first image
+        image= self.animation[self.etat_anim][self.index_image]
         if not self.regarde_droite:
             image= pygame.transform.flip(image, True, False)
         surface.blit(image, image.get_rect(midbottom=self.rect.midbottom))
@@ -35,10 +40,13 @@ class Fighter:
             pygame.draw.rect(surface, (255, 255, 0), zone)
         
     def deplacer(self, touch_left, touch_right, touches):
+        self.en_mouvement= False
         if touches[touch_left]:
             self.rect.x -= VITESSE
+            self.en_mouvement= True
         if touches[touch_right]:
             self.rect.x += VITESSE
+            self.en_mouvement= True
         if self.rect.x < 0:
             self.rect.x = 0
         if self.rect.right > LARGEUR_FENETRE:
@@ -82,5 +90,23 @@ class Fighter:
         if  zone and not self.a_touche and zone.colliderect(adversaire.rect):
             adversaire.health= max(0, adversaire.health - DEGATS)
             self.a_touche= True
-                
-    
+            
+    def animer(self):
+        if self.attaque_time > 0:
+            nouvelle_etat= "attaque"
+        elif self.en_mouvement:
+            nouvelle_etat= "course"
+        else:
+            nouvelle_etat= "repos"
+        if nouvelle_etat != self.etat_anim:
+            if self.etat_anim== "attaque":
+                total= len(self.animation["attaque"])
+                self.index_image= min(self.index_image, total - 1, (DUREE_ATTAQUE - self.attaque_time) * total // DUREE_ATTAQUE)
+                return
+            self.etat_anim= nouvelle_etat
+            self.index_image= 0
+            self.compteur_anim= 0
+        self.compteur_anim += 1 
+        if self.compteur_anim >= VITESSE_ANIM:
+            self.compteur_anim = 0
+            self.index_image = (self.index_image + 1) % len(self.animation[self.etat_anim])
