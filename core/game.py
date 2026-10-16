@@ -14,6 +14,7 @@ class Game:
         self.score1= 0
         self.score2= 0
         self.petite_police = pygame.font.Font(None, 50)  # Smaller font for displaying scores
+        self.etat= "menu"
         self.nouvelle_partie()
 
     def gerer_evenements(self):
@@ -25,8 +26,19 @@ class Game:
                     self.score1= 0
                     self.score2= 0
                 self.nouvelle_partie()
+                
+            if event.type== pygame.KEYDOWN and event.key == pygame.K_RETURN and self.etat== "menu":
+                self.etat= "combat"
 
     def draw(self):
+        if self.etat== "menu":
+            self.screen.fill(COULEUR_FOND)
+            titre = self.police.render("last kombat", True, (255, 255, 255))
+            self.screen.blit(titre, titre.get_rect(center=(LARGEUR_FENETRE // 2, 200)))
+            consigne= self.petite_police.render("appuyer sur entre pour commencer", True, (255, 255, 255))
+            self.screen.blit(consigne, consigne.get_rect(center=(LARGEUR_FENETRE // 2, 350)))
+            pygame.display.flip()
+            return
         self.screen.fill(COULEUR_FOND)
         self.player1.draw(self.screen)
         self.player2.draw(self.screen)
@@ -63,8 +75,8 @@ class Game:
         pygame.quit()
         
     def mettre_à_jour(self):
-        if self.vainqueur:
-            return  # Stop updating if there's a winner
+        if self.etat== "menu" or self.vainqueur:
+            return
         touches= pygame.key.get_pressed()
         self.player1.deplacer(pygame.K_q, pygame.K_d, touches)
         self.player2.deplacer(pygame.K_LEFT, pygame.K_RIGHT, touches)

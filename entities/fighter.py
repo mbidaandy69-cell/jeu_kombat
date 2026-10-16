@@ -1,5 +1,7 @@
 import pygame
 from settings import *
+import os
+from core.outils import decoupe_bande
 
 class Fighter:
     def __init__(self, x, y, width, height, color):
@@ -15,13 +17,19 @@ class Fighter:
         self.max_health = 100  # Assuming max health is 100
         self.vainqueur = None  # Initialize the winner attribute
         self.police = pygame.font.Font(None, 90)  # Default font and size for displaying text
+        dossier= os.path.join(os.path.dirname(__file__), "..", "assets", "images", "samurai")
+        self.images= decoupe_bande(os.path.join(dossier, "idle1.png"), 10, (240, 240))
 
     def move(self, dx=0, dy=0):
         self.rect.x += dx * self.speed
         self.rect.y += dy * self.speed
 
     def draw(self, surface):
-        pygame.draw.rect(surface, self.color, self.rect)
+        image= self.images[0]  # For now, just use the first image
+        if not self.regarde_droite:
+            image= pygame.transform.flip(image, True, False)
+        surface.blit(image, image.get_rect(midbottom=self.rect.midbottom))
+        pygame.draw.rect(surface, (255, 0, 0), self.rect, 2)  # Draw the fighter's rectangle
         zone= self.zone_attaque()
         if zone:
             pygame.draw.rect(surface, (255, 255, 0), zone)
