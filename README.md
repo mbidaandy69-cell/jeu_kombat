@@ -8,3 +8,5 @@ ajout des personnage
 
 mouvements des personnage, course, attque (première version des attaque en attente d'amelioration)
 je dois tjr améliorer les deplacement et les attaque 
+
+tous les pbs réglé et ajout du temps

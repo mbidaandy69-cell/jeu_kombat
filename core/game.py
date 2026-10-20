@@ -1,3 +1,4 @@
+#coding: utf-8
 import pygame
 from settings import *
 from entities.fighter import Fighter
@@ -63,6 +64,7 @@ class Game:
         self.player1_pv_bar = PVBar(self.player1.health, self.player1.max_health, 400, 25)
         self.player2_pv_bar = PVBar(self.player2.health, self.player2.max_health, 400, 25)  
         self.vainqueur = None  # Initialize the winner attribute
+        self.temps_restant= DUREE_MANCHE * FPS  # Initialize the remaining time for the round
         
         
     def run(self):

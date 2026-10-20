@@ -21,9 +21,12 @@ class Fighter:
         self.compteur_anim= 0
         self.images_course= decoupe_bande(os.path.join(dossier, "run1.png"), 16, (240, 240))
         self.image_attaque= decoupe_bande(os.path.join(dossier, "attaque1.png"), 7, (240, 240))
-        self.animation= {"repos": self.images_repos, "course": self.images_course, "attaque": self.image_attaque}
+        self.touche_timer= 0
+        self.imagr_touche= decoupe_bande(os.path.join(dossier, "hurt1.png"), 4, (240, 240))
+        self.animation= {"repos": self.images_repos, "course": self.images_course, "attaque": self.image_attaque, "touche": self.imagr_touche, "ko": [pygame.transform.rotate(self.imagr_touche[-1], 90)]}
         self.etat_anim= "repos"
         self.en_mouvement= False
+        self.image_ko= [pygame.transform.rotate(self.imagr_touche[-1], 90)]
 
     def move(self, dx=0, dy=0):
         self.rect.x += dx * self.speed
@@ -33,14 +36,22 @@ class Fighter:
         image= self.animation[self.etat_anim][self.index_image]
         if not self.regarde_droite:
             image= pygame.transform.flip(image, True, False)
-        surface.blit(image, image.get_rect(midbottom=self.rect.midbottom))
+        rect_image= image.get_rect(midbottom= self.rect.midbottom)
+        rect_image.y+= DECALAGE_Y
+        if self.etat_anim== "ko":
+            rect_image.y+= DECALAGE_KO
+        surface.blit(image, rect_image)
         pygame.draw.rect(surface, (255, 0, 0), self.rect, 2)  # Draw the fighter's rectangle
         zone= self.zone_attaque()
         if zone:
-            pygame.draw.rect(surface, (255, 255, 0), zone)
+            pygame.draw.rect(surface, (255, 255, 0), zone, 2)  # Draw the attack zone in yellow
+        for i, img in enumerate(self.animation["attaque"]):
+            (pygame.transform.scale(img, (96, 96)), (10 + i * 100, 120))
         
     def deplacer(self, touch_left, touch_right, touches):
         self.en_mouvement= False
+        if self.touche_timer > 0:
+            return  # Skip movement if the fighter is in a hit state
         if touches[touch_left]:
             self.rect.x -= VITESSE
             self.en_mouvement= True
@@ -69,14 +80,19 @@ class Fighter:
         self.regarde_droite= self.rect.centerx < adversaire.rect.centerx
         
     def attaquer(self, touche_attaque, touche):
-        if touche[touche_attaque] and self.attaque_time== 0:
+        if touche[touche_attaque] and self.attaque_time== 0 and self.touche_timer== 0:
             self.attaque_time= DUREE_ATTAQUE
             self.a_touche= False
             
     def zone_attaque(self):
         if self.attaque_time== 0:
             return None
-
+        
+        total= len(self.animation["attaque"])
+        image_actuelle= (DUREE_ATTAQUE - self.attaque_time) * total // DUREE_ATTAQUE
+        if image_actuelle < IMAGE_DEBUT_COUP:
+            return None
+        
         if self.regarde_droite:
             return pygame.Rect(self.rect.right, self.rect.y +40, 70, 40)
         return pygame.Rect(self.rect.left - 70, self.rect.y +40, 70, 40)
@@ -84,29 +100,40 @@ class Fighter:
     def mettre_a_jour_attaque(self):
             if self.attaque_time > 0:
                 self.attaque_time-= 1
+            
+            if self.touche_timer > 0:
+                self.touche_timer -= 1
                 
     def toucher(self, adversaire):
         zone= self.zone_attaque()
         if  zone and not self.a_touche and zone.colliderect(adversaire.rect):
             adversaire.health= max(0, adversaire.health - DEGATS)
             self.a_touche= True
+            adversaire.touche_timer= DUREE_TOUCHE
+            adversaire.attaque_time= 0  # Stop the opponent's attack if they are hit
             
     def animer(self):
-        if self.attaque_time > 0:
-            nouvelle_etat= "attaque"
+        if self.health <= 0:
+            nouvelle_etat = "ko"
+        elif self.touche_timer > 0:
+            nouvelle_etat = "touche"    
+        elif self.touche_timer > 0:
+            nouvelle_etat = "touche"
+        elif self.attaque_time > 0:
+            nouvelle_etat = "attaque"
         elif self.en_mouvement:
-            nouvelle_etat= "course"
+            nouvelle_etat = "course"
         else:
-            nouvelle_etat= "repos"
+            nouvelle_etat = "repos"
         if nouvelle_etat != self.etat_anim:
-            if self.etat_anim== "attaque":
-                total= len(self.animation["attaque"])
-                self.index_image= min(self.index_image, total - 1, (DUREE_ATTAQUE - self.attaque_time) * total // DUREE_ATTAQUE)
-                return
-            self.etat_anim= nouvelle_etat
-            self.index_image= 0
-            self.compteur_anim= 0
-        self.compteur_anim += 1 
+            self.etat_anim = nouvelle_etat
+            self.index_image = 0
+            self.compteur_anim = 0
+        if self.etat_anim == "attaque":
+            total = len(self.animation["attaque"])
+            self.index_image = min(total - 1, (DUREE_ATTAQUE - self.attaque_time) * total // DUREE_ATTAQUE)
+            return
+        self.compteur_anim += 1
         if self.compteur_anim >= VITESSE_ANIM:
             self.compteur_anim = 0
             self.index_image = (self.index_image + 1) % len(self.animation[self.etat_anim])
