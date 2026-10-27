@@ -1,0 +1,19 @@
+SPRITES - 3 PERSONNAGES (tous regardent vers la DROITE)
+
+Chaque fichier PNG est une bande horizontale d'images (fond transparent).
+Taille d'une image : 176 x 144 pixels.
+Le sol est a la ligne 136 (donc 8 pixels de marge sous les pieds).
+Le personnage est centre horizontalement dans l'image.
+
+NOMBRE D'IMAGES PAR BANDE
+kenzo  : idle 6 | walk 8 | jump 4 | attack1 6 | attack2 6 | attack3 7 | hurt 4 | ko 6
+gorak  : idle 6 | walk 8 | jump 4 | attack1 6 | attack2 7 | hurt 4 | ko 6
+zephyr : idle 6 | walk 8 | jump 4 | attack1 4 | attack2 4 | attack3 5 | attack4 6 | hurt 4 | ko 6
+
+IMAGES OU LE COUP TOUCHE (numero de 0 a ...)
+kenzo  : attack1 = 3 a 4 | attack2 = 3 a 4 | attack3 = 4 a 5
+gorak  : attack1 = 2 a 3 | attack2 = 4 a 5
+zephyr : attack1 = 1 a 2 | attack2 = 1 a 2 | attack3 = 1 a 2 | attack4 = 2 a 4
+
+JUMP (4 images) : 0 = montee, 1 = sommet, 2 = descente, 3 = reception
+KO : la derniere image (5) est le corps allonge au sol

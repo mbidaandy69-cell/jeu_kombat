@@ -10,3 +10,5 @@ mouvements des personnage, course, attque (première version des attaque en atte
 je dois tjr améliorer les deplacement et les attaque 
 
 tous les pbs réglé et ajout du temps
+
+creation de personnages plus foctionnel (3) ajout  de l'écrant de elecion des personnages
