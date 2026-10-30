@@ -6,6 +6,7 @@ from entities.fighter import Fighter
 from entities.pv_bar import PVBar
 from entities.personnages import PERSONNAGES
 from core.outils import decoupe_bande
+from entities.decors import DECORS
 
 class Game:
     def __init__(self):
@@ -29,6 +30,13 @@ class Game:
             fichier, nombre = fiche["animations"]["repos"]
             chemin = os.path.join(os.path.dirname(__file__), "..", "assets", "images", fiche["dossier"], fichier)
             self.apercus[cle] = decoupe_bande(chemin, nombre, TAILLE_IMAGE)[0]
+        self.cles_decor= list(DECORS)
+        self.choix_decor= 0
+        self.decor= self.cles_decor[0]
+        self.fonds= {}
+        for cle, fiche in DECORS.items():
+            chemin= os.path.join(os.path.dirname(__file__),"..", "assets", "images", fiche["image"])
+            self.fonds[cle]= pygame.image.load(chemin).convert()
         self.nouvelle_partie()
 
     def gerer_evenements(self):
@@ -40,6 +48,8 @@ class Game:
                         self.ouvrir_choix()
                     elif self.etat == "choix":
                         self.gerer_choix(event.key)
+                    elif self.etat== "decor":
+                        self.gerer_decor(event.key)
                     elif self.etat == "combat" and self.vainqueur and event.key == pygame.K_RETURN:
                         if self.score1 == MANCHES_VICTOIRE or self.score2 == MANCHES_VICTOIRE:
                             self.score1 = 0
@@ -68,7 +78,7 @@ class Game:
                 self.valide[joueur] = True
         if all(self.valide):
             self.nouvelle_partie()
-            self.etat = "combat"
+            self.etat = "decor"
 
     def draw(self):
         if self.etat== "menu":
@@ -84,7 +94,10 @@ class Game:
             self.dessiner_choix()
             return
         
-        self.screen.fill(COULEUR_FOND)
+        if self.etat== "decor":
+            self.dessiner_decor()
+            return
+        self.screen.blit(self.fonds[self.decor], (0, 0))
         self.player1.draw(self.screen)
         self.player2.draw(self.screen)
         self.screen.blit(self.player1_pv_bar.image, (10, 10))
@@ -183,4 +196,21 @@ class Game:
         aide2 = self.police_info.render("J2 : fleches pour choisir, V pour valider", True, (200, 200, 200))
         self.screen.blit(aide1, aide1.get_rect(center=(LARGEUR_FENETRE // 2, 530)))
         self.screen.blit(aide2, aide2.get_rect(center=(LARGEUR_FENETRE // 2, 560)))
+        pygame.display.flip()
+        
+    def gerer_decor(self, touche):
+        if touche in (pygame.K_q, pygame.K_LEFT):
+            self.choix_decor= ((self.choix_decor - 1) % len(self.cles_decor))
+        elif touche in (pygame.K_d, pygame.K_RIGHT):
+            self.choix_decor= ((self.choix_decor + 1) % len(self.cles_decor))
+        elif touche== pygame.K_RETURN:
+            self.decor= self.cles_decor[self.choix_decor]
+            self.nouvelle_partie()
+            self.etat= "combat"
+            
+    def dessiner_decor(self):
+        cle= self.cles_decor[self.choix_decor]
+        self.screen.blit(self.fonds[cle], (0, 0))
+        texte= self.police_info.render("< " + DECORS[cle]["nom"] + " >", True, (255, 255, 255))
+        self.screen.blit(texte, texte.get_rect(center=(LARGEUR_FENETRE // 2, 60)))
         pygame.display.flip()

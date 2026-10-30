@@ -30,7 +30,7 @@ PERSONNAGES= {
         "dossier": "personnages/gorak",
         "vie": 140,
         "vitesse": 4,
-        "force_saut": 15,
+        "force_saut": 20,
         "boite": (96, 198),
         "animations": {
             "repos": ("idle.png", 6),

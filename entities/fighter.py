@@ -216,6 +216,9 @@ class Fighter:
                 self.index_image = (self.index_image + 1) % total
                 
     def repousser(self, autre):
+        
+        if not self.sur_sol or not autre.sur_sol:
+            return
         if not self.rect.colliderect(autre.rect):
             return
         chevauche = min(self.rect.right, autre.rect.right) - max(self.rect.left, autre.rect.left)

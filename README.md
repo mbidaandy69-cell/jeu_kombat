@@ -12,3 +12,5 @@ je dois tjr améliorer les deplacement et les attaque
 tous les pbs réglé et ajout du temps
 
 creation de personnages plus foctionnel (3) ajout  de l'écrant de elecion des personnages
+
+correction du saut et ajout de l'arrier plan avec gestion du chevauchemment entre les personnage
